@@ -28,28 +28,45 @@ const initialFormData = {
   salePrice: "",
   totalStock: "",
 };
-
 const AdminProducts = () => {
-  const [openCreateProductsDialog, setOpenCreateProductsDialog] =
-    useState(false);
+  const [openCreateProductsDialog, setOpenCreateProductsDialog] = useState(false);
   const [formData, setFormData] = useState(initialFormData);
   const [imageFile, setImageFile] = useState(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState("");
   const [imageLoadingState, setImageLoadingState] = useState(false);
   const [currentEditedId, setCurrentEditedId] = useState(null);
- 
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 8;
+
   const dispatch = useDispatch();
   const { productsList } = useSelector((state) => state.adminProducts);
 
-  function onSubmit(e) {
+  useEffect(() => {
+    dispatch(fetchAllProducts());
+  }, [dispatch]);
+
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = productsList?.slice(indexOfFirstProduct, indexOfLastProduct);
+
+  const totalPages = Math.ceil((productsList?.length || 0) / productsPerPage);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
+
+  const onSubmit = (e) => {
     e.preventDefault();
     currentEditedId !== null
-      ? dispatch(
-          editProduct({
-            id: currentEditedId,
-            formData,
-          })
-        ).then((data) => {
+      ? dispatch(editProduct({ id: currentEditedId, formData })).then((data) => {
           if (data?.payload?.success) {
             dispatch(fetchAllProducts());
             setCurrentEditedId(null);
@@ -57,12 +74,7 @@ const AdminProducts = () => {
             setOpenCreateProductsDialog(false);
           }
         })
-      : dispatch(
-          addNewProduct({
-            ...formData,
-            image: uploadedImageUrl,
-          })
-        ).then((data) => {
+      : dispatch(addNewProduct({ ...formData, image: uploadedImageUrl })).then((data) => {
           if (data?.payload?.success) {
             dispatch(fetchAllProducts());
             setImageFile(null);
@@ -70,9 +82,7 @@ const AdminProducts = () => {
             setOpenCreateProductsDialog(false);
           }
         });
-  }
-
-  // console.log(productsList)
+  };
 
   const isFormValid = () => {
     return Object.keys(formData)
@@ -81,7 +91,6 @@ const AdminProducts = () => {
   };
 
   const handelDelete = (getCurrentProductId) => {
-    // alert(getCurrentProductId)
     const check = confirm("You Want to delete this product");
     if (check) {
       const againCheck = confirm("Think again you want to delete this product");
@@ -98,10 +107,6 @@ const AdminProducts = () => {
     }
   };
 
-  useEffect(() => {
-    dispatch(fetchAllProducts());
-  }, [dispatch]);
-
   return (
     <Fragment>
       <div className="mb-5 w-full flex justify-end">
@@ -112,9 +117,11 @@ const AdminProducts = () => {
           Add New Products
         </Button>
       </div>
+
+      {/* Product Grid */}
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
-        {productsList && productsList.length > 0
-          ? productsList.map((productItem) => (
+        {currentProducts && currentProducts.length > 0
+          ? currentProducts.map((productItem) => (
               <AdminProductTile
                 setFormData={setFormData}
                 setOpenCreateProductsDialog={setOpenCreateProductsDialog}
@@ -124,8 +131,29 @@ const AdminProducts = () => {
                 handelDelete={handelDelete}
               />
             ))
-          : ""}
+          : <p>No products found.</p>}
       </div>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-center items-center gap-4 mt-6">
+        <Button
+          disabled={currentPage === 1}
+          onClick={handlePrevPage}
+          className="bg-gray-300 text-black hover:bg-gray-400"
+        >
+          Previous
+        </Button>
+        <span>Page {currentPage} of {totalPages}</span>
+        <Button
+          disabled={currentPage === totalPages}
+          onClick={handleNextPage}
+          className="bg-gray-300 text-black hover:bg-gray-400"
+        >
+          Next
+        </Button>
+      </div>
+
+      {/* Add/Edit Product Sheet */}
       <Sheet
         open={openCreateProductsDialog}
         onOpenChange={() => {
@@ -164,5 +192,6 @@ const AdminProducts = () => {
     </Fragment>
   );
 };
+
 
 export default AdminProducts;

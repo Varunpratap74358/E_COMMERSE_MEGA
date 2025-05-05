@@ -147,7 +147,7 @@ export const getAllOrdersByUser=async(req,res)=>{
   try {
     const {userId} = req.params;
     // console.log(userId)
-    const orders = await Order.find({userId})
+    const orders = await Order.find({ userId }).sort({ createdAt: -1 });
     // console.log(orders)
     if(!orders.length){
       return res.status(404).json({

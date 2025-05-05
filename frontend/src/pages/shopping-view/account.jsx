@@ -18,8 +18,8 @@ const ShoppingAccount = () => {
         <div className="flex flex-col rounded-lg border bg-background p-6 shadow-sm">
           <Tabs defaultValue="orders">
             <TabsList className={'flex gap-3 px-2 text-black'}>
-              <TabsTrigger value="orders" className="cursor-pointer hover:bg-slate-200 roundde px-2 hover:font-semibold">Orders</TabsTrigger>
-              <TabsTrigger value="address" className="cursor-pointer hover:bg-slate-200 roundde px-2 hover:font-semibold">Address</TabsTrigger>
+              <TabsTrigger value="orders" className="cursor-pointer hover:bg-slate-200 hover:rounded-2xl px-2 hover:font-semibold">Orders</TabsTrigger>
+              <TabsTrigger value="address" className="cursor-pointer hover:bg-slate-200 hover:rounded-2xl px-2 hover:font-semibold">Address</TabsTrigger>
             </TabsList>
             <TabsContent value="orders"><ShoppingOrders /> </TabsContent>
             <TabsContent value="address"><Address /></TabsContent>
